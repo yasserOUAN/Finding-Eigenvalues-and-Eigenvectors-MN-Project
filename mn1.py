@@ -28,7 +28,6 @@ def calculate_eigenvalues(matrix, max_iter=1000, tolerance=1e-10):
 def calculate_eigenvector(matrix, eigenvalue):
     """
     Calculate eigenvector by solving (A - λI)v = 0
-    Uses row reduction to find null space
     Returns: eigenvector as a list
     """
     n = len(matrix)
@@ -38,82 +37,74 @@ def calculate_eigenvector(matrix, eigenvalue):
     for i in range(n):
         A_shifted[i][i] -= eigenvalue
     
-    # For 2x2 matrix, use direct formula
+    # For 2x2 matrix
     if n == 2:
-        # From equation: a*v1 + b*v2 = 0
-        # If b != 0: v1 = 1, v2 = -a/b
-        # If b == 0: v1 = 0, v2 = 1
         a = A_shifted[0][0]
         b = A_shifted[0][1]
         
-        if abs(b) > 1e-10:
-            v = [1.0, -a/b]
-        elif abs(a) > 1e-10:
-            v = [-b/a, 1.0]
+        if abs(b) > 0:
+            v = [1, -a/b]
+        elif abs(a) > 0:
+            v = [-b/a, 1]
         else:
-            # Use second row
             c = A_shifted[1][0]
             d = A_shifted[1][1]
-            if abs(d) > 1e-10:
-                v = [1.0, -c/d]
+            if abs(d) > 0:
+                v = [1, -c/d]
             else:
-                v = [0.0, 1.0]
-        
+                v = [0, 1]
         return v
     
-    # For larger matrices, use general approach
-    # Find row with non-zero element
-    v = [0.0] * n
-    
-    # Try each row to find valid null space vector
-    for row_idx in range(n):
-        # Find largest non-zero coefficient in this row
-        max_coef = 0
-        max_col = 0
-        for col_idx in range(n):
-            if abs(A_shifted[row_idx][col_idx]) > max_coef:
-                max_coef = abs(A_shifted[row_idx][col_idx])
-                max_col = col_idx
+    # For 3x3 matrix
+    if n == 3:
+        v1 = 1
         
-        if max_coef > 1e-10:
-            # Set all variables to 1 except the one with max coefficient
-            for i in range(n):
-                v[i] = 1.0
-            
-            # Solve for the variable with max coefficient
+        a11, a12, a13 = A_shifted[0]
+        a21, a22, a23 = A_shifted[1]
+        
+        if abs(a13) > 0 and abs(a23) > 0:
+            denom = a13 * a22 - a23 * a12
+            if abs(denom) > 0:
+                v2 = (a23 * a11 - a13 * a21) * v1 / denom
+            else:
+                v2 = 0
+            v3 = -(a11 * v1 + a12 * v2) / a13
+        elif abs(a12) > 0 and abs(a22) > 0:
+            v3 = 1
+            denom = a11 * a22 - a21 * a12
+            if abs(denom) > 0:
+                v2 = (a21 * a13 - a11 * a23) * v3 / denom
+            else:
+                v2 = 0
+            v1 = -(a12 * v2 + a13 * v3) / a11 if abs(a11) > 0 else 1
+        else:
+            v2 = 1
+            v3 = 1
+            if abs(a11) > 0:
+                v1 = -(a12 * v2 + a13 * v3) / a11
+            else:
+                v1 = 1
+        
+        return [v1, v2, v3]
+    
+    # For larger matrices
+    v = [1] * n
+    for row_idx in range(n):
+        non_zero_col = -1
+        for col_idx in range(n):
+            if abs(A_shifted[row_idx][col_idx]) > 0:
+                non_zero_col = col_idx
+                break
+        
+        if non_zero_col >= 0:
             sum_val = 0
             for j in range(n):
-                if j != max_col:
+                if j != non_zero_col:
                     sum_val += A_shifted[row_idx][j] * v[j]
             
-            v[max_col] = -sum_val / A_shifted[row_idx][max_col]
-            break
+            v[non_zero_col] = -sum_val / A_shifted[row_idx][non_zero_col]
     
     return v
-
-
-def calculate_largest_eigenvalue(matrix, max_iter=100):
-    """
-    Calculate largest eigenvalue using power method
-    Returns: (eigenvalue, eigenvector)
-    """
-    n = len(matrix)
-    v = [1.0] * n
-    
-    for iteration in range(max_iter):
-        v_new = matrix_vector_mult(matrix, v)
-        
-        max_val = max(abs(x) for x in v_new)
-        if max_val > 1e-10:
-            v = [x / max_val for x in v_new]
-        else:
-            v = v_new
-    
-    Av = matrix_vector_mult(matrix, v)
-    eigenvalue = sum(v[i] * Av[i] for i in range(n)) / sum(v[i]**2 for i in range(n))
-    
-    return eigenvalue, v
-
 
 def qr_decomposition(A):
     """QR decomposition using Gram-Schmidt"""
@@ -190,7 +181,7 @@ def main():
     
     print("\nEigenvalues:")
     for i, val in enumerate(eigenvalues):
-        print(f"λ{i+1} = {val:.6f}")
+        print(f"λ{i+1} = {int(round(val))}")
     
     # Calculate eigenvectors
     print("\n" + "="*50)
@@ -198,7 +189,7 @@ def main():
     print("="*50)
     
     for i, eigenval in enumerate(eigenvalues):
-        print(f"\nEigenvector {i+1} (for λ = {eigenval:.6f}):")
+        print(f"\nEigenvector {i+1} (for λ = {int(round(eigenval))}):")
         eigenvec = calculate_eigenvector(matrix, eigenval)
         print_vector(eigenvec)
         
@@ -206,8 +197,8 @@ def main():
         Av = matrix_vector_mult(matrix, eigenvec)
         lambdav = [eigenval * v for v in eigenvec]
         
-        print(f"  A*v = {[f'{x:.4f}' for x in Av]}")
-        print(f"  λ*v = {[f'{x:.4f}' for x in lambdav]}")
+        print(f"  A*v = {[int(round(x)) for x in Av]}")
+        print(f"  λ*v = {[int(round(x)) for x in lambdav]}")
         
 
 
