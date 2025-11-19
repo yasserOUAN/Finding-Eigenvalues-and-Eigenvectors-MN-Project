@@ -184,14 +184,6 @@ def print_vector(vector):
     print([int(round(x)) for x in vector])
 
 
-def verify_eigenpair(matrix, eigenvalue, eigenvector):
-    n = len(matrix)
-    Av = matrix_vector_mult(matrix, eigenvector)
-    lamv = [eigenvalue * x for x in eigenvector]
-    error = sum((Av[i] - lamv[i])**2 for i in range(n))**0.5
-    return error
-
-
 def main():
     n = int(input("Enter matrix size (2 or 3): "))
     if n not in [2, 3]:
@@ -230,7 +222,7 @@ def main():
         lamv = [lam * x for x in v]
         print(f"  A*v = {[int(round(x)) for x in Av]}")
         print(f"  λ*v = {[int(round(x)) for x in lamv]}")
-        print(f"  Verification error: {verify_eigenpair(matrix, lam, v):.6e}")
+        
 
 
 if __name__ == "__main__":
