@@ -6,7 +6,7 @@ def fillmatrix ():
     A = [[0.0, 0.0], [0.0, 0.0]]
     for i in range(2):
         for j in range(2):
-            A[i][j]=float (input("A[%d][%d]=" % (i , j )))
+            A[i][j]=float (input("A[%d][%d]=" % (i + 1, j + 1)))
     return A
 
 #                   function to choice the correct method to calculate lamba
@@ -28,7 +28,7 @@ def eigenvalue (A):
     return t1, t2
 
 
-#function to find eigenvector(s) depending on the nature of lamba
+#                   function to find eigenvector(s) depending on the nature of lamba
 def eigenvector (A,t1,t2):
     v2=[0,0]
     a = int( random.randint(1, 10) * random.choice([-1, 1]))
@@ -48,9 +48,6 @@ def eigenvector (A,t1,t2):
         if (A[0][0] - t1) > 0 and A[0][1] > 0 or (A[0][0] - t1) < 0 and A[0][1] < 0 :
             x = x * (- 1)
         v1 = [a, a * x]
-    print("from the eigenvalues we deduce that the vector can be written as")
-    print(f"-----> x = ( {x} ) * y")
-    print(f"let x = ({a} so y = ({a * x}) \n")
 
     # there is lamba 2
     if t1 != t2:
@@ -68,18 +65,16 @@ def eigenvector (A,t1,t2):
             if (A[1][1] - t1) > 0 and A[1][0] > 0 or (A[1][1] - t1) < 0 and A[1][0] < 0:
                 y = y * (- 1)
             v2 = [c, c * y]
-        print("and the second vector can be written as")
-        print(f"-----> X = ( {y} ) * Y")
-        print(f"let X = ({a}) so Y = {a * y} \n")
+
 
     return v1 , v2
 
 #                   function to print the lambas
 def values():
     if t1 == t2:
-        print(f"the matrix have one eigenvalue and it is: λ1 = {t1} ")
+        print(f"the matrix have one eigenvalue and it is {t1} ")
     else:
-        print(f"the matrix have two eigenvalues and they are: λ1 = {t1} ; λ2 = {t2} ")
+        print(f"the matrix have two eigenvalues and they are {t1} and {t2} ")
     print("\n")
 
 
@@ -97,15 +92,13 @@ print("fill a 2x2 matrix \n")
 A= fillmatrix()
 print(f"{A[0]}\n{A[1]}")
 
-
+print("===============================================================/n")
 #                   finding and printing eigenvalue
-print("             ======================================\n")
 t1,t2= eigenvalue (A)
 values()
 
-print("             ======================================\n")
-
-
+print("===============================================================/n")
 #                   finding and printing eigenvectors
+print(f"")
 v1,v2 = eigenvector(A,t1,t2)
 vectors()
